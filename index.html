@@ -63,7 +63,7 @@
     <!-- Main Container -->
     <main class="max-w-xl mx-auto px-4 mt-4 space-y-6">
 
-        <!-- TOP HIGHLIGHT REEL (Auto-fetched Trending Movies) -->
+        <!-- TOP HIGHLIGHT REEL -->
         <section class="space-y-3">
             <div class="flex items-center justify-between">
                 <h3 class="text-xs font-black text-yellow-400 uppercase tracking-widest flex items-center space-x-1.5">
@@ -76,22 +76,22 @@
             <div id="highlightReelContainer" class="flex space-x-3 overflow-x-auto pb-2 scroll-smooth">
                 <div class="min-w-[240px] h-[135px] rounded-2xl bg-slate-900 border border-yellow-500/30 flex flex-col items-center justify-center text-gray-400 text-xs p-4 text-center font-bold">
                     <i class="fa-solid fa-spinner fa-spin text-2xl text-yellow-400 mb-2"></i>
-                    <span>Auto-fetching movies from cloud storage...</span>
+                    <span>Loading Cloud Movies...</span>
                 </div>
             </div>
         </section>
 
-        <!-- ALL MOVIES GRID (Auto-Synced from Upload Engine) -->
+        <!-- ALL MOVIES GRID -->
         <section class="space-y-4">
             <div class="border-b border-yellow-400/20 pb-2">
                 <h2 class="text-sm font-black bg-gradient-to-r from-yellow-400 via-amber-300 to-cyan-400 bg-clip-text text-transparent uppercase tracking-wider">
                     Full-Length Cinematic Library
                 </h2>
-                <p class="text-[11px] font-bold text-gray-300 mt-0.5">Crystal Clear HD Stream with VidMate Touch Gestures</p>
+                <p class="text-[11px] font-bold text-gray-300 mt-0.5">Crystal HD Stream & Token Rewards System</p>
             </div>
 
             <div id="moviesGridContainer" class="space-y-4">
-                <!-- Dynamically synced movies render here -->
+                <!-- Movies render here -->
             </div>
         </section>
 
@@ -99,7 +99,8 @@
 
     <!-- FULLSCREEN THEATER PLAYER MODAL -->
     <div id="theaterPlayerModal" class="fixed inset-0 bg-black z-[1000] hidden flex flex-col justify-between">
-        <div class="px-4 py-3 flex items-center justify-between bg-black/80 backdrop-blur-md absolute top-0 left-0 right-0 z-50 border-b border-white/10">
+        <!-- Top Bar hidden during play or minimal back -->
+        <div class="px-4 py-3 flex items-center justify-between bg-black/90 backdrop-blur-md absolute top-0 left-0 right-0 z-50 border-b border-white/10">
             <h3 id="playerMovieTitle" class="text-xs font-black text-yellow-400 truncate max-w-[240px]">Now Playing</h3>
             <div class="flex items-center space-x-3">
                 <button onclick="toggleFullScreenPlayer()" class="text-white text-sm bg-slate-800/80 px-2.5 py-1 rounded-lg">
@@ -111,6 +112,7 @@
             </div>
         </div>
 
+        <!-- Video Stream Frame with Touch Gestures -->
         <div id="playerScreenWrapper" class="relative w-full h-full bg-black flex items-center justify-center" ontouchstart="handleTouchStart(event)" ontouchmove="handleTouchMove(event)">
             <div id="gestureToast" class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-black/80 text-yellow-400 px-4 py-2 rounded-xl text-xs font-black hidden z-50 border border-yellow-500/40 shadow-2xl pointer-events-none">
                 <span id="gestureToastText">Brightness: 100%</span>
@@ -119,25 +121,83 @@
             <iframe id="theaterIframe" src="" style="width: 100%; height: 100%; position: absolute; top: 0; left: 0; border: 0;" allowfullscreen="true" allow="autoplay; encrypted-media"></iframe>
         </div>
 
-        <div class="p-3 bg-black/90 backdrop-blur-md border-t border-white/10 absolute bottom-0 left-0 right-0 z-50 space-y-2">
-            <div class="flex items-center justify-between text-xs">
-                <button onclick="handleLikeActiveMovie()" class="flex items-center space-x-1.5 text-pink-400 font-bold">
-                    <i class="fa-solid fa-heart text-sm"></i>
+        <!-- Bottom Interactive Bar (Likes, Comments, Tips, Share) -->
+        <div class="p-3 bg-black/95 backdrop-blur-md border-t border-white/10 absolute bottom-0 left-0 right-0 z-50 space-y-3">
+            <div class="flex items-center justify-around text-xs">
+                <button onclick="handleLikeActiveMovie()" class="flex items-center space-x-1 text-pink-400 font-bold active:scale-95 transition">
+                    <i class="fa-solid fa-heart text-base"></i>
                     <span id="modalLikeCount">0 Likes</span>
                 </button>
-                <button onclick="openTokenTipModal()" class="flex items-center space-x-1.5 text-yellow-400 font-bold bg-yellow-500/20 px-3 py-1 rounded-xl border border-yellow-500/40">
-                    <i class="fa-solid fa-coins"></i>
+                <button onclick="openTokenTipModal()" class="flex items-center space-x-1 text-yellow-400 font-bold bg-yellow-500/20 px-3 py-1.5 rounded-xl border border-yellow-500/40 active:scale-95 transition">
+                    <i class="fa-solid fa-coins text-base"></i>
                     <span>Tip 19 Tokens</span>
                 </button>
-                <button onclick="shareMovieLink()" class="flex items-center space-x-1.5 text-cyan-400 font-bold">
-                    <i class="fa-solid fa-share-nodes text-sm"></i>
+                <button onclick="shareMovieLink()" class="flex items-center space-x-1 text-cyan-400 font-bold active:scale-95 transition">
+                    <i class="fa-solid fa-share-nodes text-base"></i>
                     <span>Share</span>
+                </button>
+            </div>
+
+            <!-- Comment Input Box -->
+            <div class="flex space-x-2 pt-1 border-t border-slate-800">
+                <input type="text" id="modalCommentInput" placeholder="Write a comment & earn tokens..." class="flex-1 bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white font-bold">
+                <button onclick="postComment()" class="px-4 py-2 bg-yellow-500 text-black font-black rounded-xl text-xs">Post</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 19 TOKENS TIP MODAL -->
+    <div id="tokenTipModal" class="fixed inset-0 bg-black/9orgen backdrop-blur-md z-[1100] hidden flex items-center justify-center p-4">
+        <div class="glass-card w-full max-w-md rounded-3xl p-5 border border-yellow-500/50 space-y-4 max-h-[90vh] overflow-y-auto">
+            <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+                <h3 class="text-xs font-black text-yellow-400 flex items-center space-x-2">
+                    <i class="fa-solid fa-coins"></i>
+                    <span>SEND 19 CUSTOM TOKENS TIP</span>
+                </h3>
+                <button onclick="closeTokenTipModal()" class="text-gray-400 hover:text-white"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+
+            <div class="space-y-3">
+                <label class="block text-xs font-bold text-gray-300">Select Token Category:</label>
+                <select id="selectedTokenCategory" class="w-full bg-slate-950 border border-yellow-500/50 rounded-xl px-3 py-2.5 text-xs text-yellow-400 font-black">
+                    <optgroup label="Project Tokens">
+                        <option value="MG">MY GROUP (MG)</option>
+                        <option value="BLH">BULISH (BLH)</option>
+                        <option value="BWD">BOWLD (BWD)</option>
+                        <option value="SCS">SUCCESS (SCS)</option>
+                        <option value="BRH">BEARISH (BRH)</option>
+                        <option value="MLF">MY LIFE (MLF)</option>
+                        <option value="HRM">HARAMI (HRM)</option>
+                        <option value="MTR">MASTER (MTR)</option>
+                        <option value="DOJI">DOJI (DOJI)</option>
+                        <option value="BULT">BULLET (BULT)</option>
+                        <option value="SGP">SHIPING TOP (SGP)</option>
+                        <option value="JKR">JOKER (JKR)</option>
+                        <option value="ULG">UNGALPING (ULG)</option>
+                        <option value="MGSML">MGSML</option>
+                    </optgroup>
+                    <optgroup label="Trading Tokens">
+                        <option value="SKY">SKY</option>
+                        <option value="RKT">ROKET (RKT)</option>
+                        <option value="GME">GAME (GME)</option>
+                        <option value="SSR">SIXSAR (SSR)</option>
+                        <option value="TPY">TROPHY (TPY)</option>
+                    </optgroup>
+                </select>
+
+                <div>
+                    <label class="block text-xs font-bold text-gray-300 mb-1">Enter Token Quantity:</label>
+                    <input type="number" id="tokenTipAmount" value="10" min="1" class="w-full bg-slate-950 border border-cyan-500/50 rounded-xl px-3 py-2 text-xs text-white font-bold">
+                </div>
+
+                <button onclick="executeSendTokenTip()" class="w-full py-3 bg-gradient-to-r from-yellow-400 via-amber-500 to-green-400 text-black font-black rounded-xl text-xs shadow-lg active:scale-95 transition">
+                    SEND TOKENS TO CREATOR WALLET 🚀
                 </button>
             </div>
         </div>
     </div>
 
-    <!-- Script Auto-Sync Engine -->
+    <!-- Script Auto-Sync & Reward Engine -->
     <script>
         const LIBRARY_ID = "799000";
         let activeMovieId = null;
@@ -147,14 +207,11 @@
 
         document.addEventListener("DOMContentLoaded", () => {
             autoFetchAndSyncMovies();
-            // Auto sync every 2 seconds to ensure real-time update
-            setInterval(autoFetchAndSyncMovies, 2000);
+            setInterval(autoFetchAndSyncMovies, 3000);
         });
 
         function autoFetchAndSyncMovies() {
             let savedMovies = JSON.parse(localStorage.getItem('mgsml_stream_movies') || '[]');
-            
-            // Auto-filter movies category (or include all if category is movie/unspecified)
             let movieItems = savedMovies.filter(m => m.category === 'movie' || !m.category || m.category === 'medium');
 
             let highlightContainer = document.getElementById('highlightReelContainer');
@@ -166,15 +223,20 @@
                 return;
             }
 
-            // Populate Highlight Reel (Sorted by views automatically)
             let sortedByViews = [...movieItems].sort((a, b) => (b.views || 0) - (a.views || 0));
             highlightContainer.innerHTML = "";
             sortedByViews.forEach(movie => {
-                let thumb = movie.thumbnail || 'https://via.placeholder.com/300x169/0d1b2a/00e5ff?text=MGSML+Movie';
+                let thumb = movie.thumbnail || '';
+                let thumbHtml = thumb ? `<img src="${thumb}" class="w-full h-full object-cover" alt="Highlight">` : `
+                    <div class="w-full h-full bg-gradient-to-br from-slate-900 to-indigo-950 flex flex-col items-center justify-center p-2 text-center">
+                        <div class="w-10 h-10 rounded-full bg-yellow-500 text-black flex items-center justify-center text-base shadow-lg mb-1"><i class="fa-solid fa-play ml-0.5"></i></div>
+                        <span class="text-[10px] font-black text-yellow-400 truncate max-w-full">${movie.title}</span>
+                    </div>`;
+
                 let card = `
                     <div onclick="openTheaterPlayer('${movie.id}')" class="min-w-[240px] max-w-[240px] bg-slate-900 rounded-2xl overflow-hidden border border-yellow-500/30 shadow-lg cursor-pointer active:scale-95 transition">
                         <div class="relative h-[135px] bg-black">
-                            <img src="${thumb}" class="w-full h-full object-cover" alt="Highlight">
+                            ${thumbHtml}
                             <div class="absolute bottom-2 right-2 bg-black/80 px-2 py-0.5 rounded text-[9px] font-black text-yellow-400">
                                 <i class="fa-solid fa-eye"></i> ${movie.views || 100}
                             </div>
@@ -188,19 +250,19 @@
                 highlightContainer.innerHTML += card;
             });
 
-            // Populate Main Grid
             gridContainer.innerHTML = "";
             movieItems.forEach(movie => {
-                let thumb = movie.thumbnail || 'https://via.placeholder.com/640x360/0d1b2a/00e5ff?text=MGSML+Movie';
+                let thumb = movie.thumbnail || '';
+                let thumbHtml = thumb ? `<img src="${thumb}" class="w-full h-full object-cover" alt="Movie">` : `
+                    <div class="w-full h-full bg-gradient-to-br from-slate-900 to-indigo-950 flex flex-col items-center justify-center p-4 text-center">
+                        <div class="w-14 h-14 rounded-full bg-yellow-500 text-black flex items-center justify-center text-xl shadow-xl shadow-yellow-500/40 mb-2"><i class="fa-solid fa-play ml-1"></i></div>
+                        <span class="text-xs font-black text-yellow-400">PLAY CINEMA HD</span>
+                    </div>`;
+
                 let gridCard = `
                     <div class="glass-card rounded-2xl overflow-hidden border border-yellow-500/30 shadow-xl flex flex-col sm:flex-row">
                         <div onclick="openTheaterPlayer('${movie.id}')" class="relative sm:w-48 h-48 sm:h-auto bg-black cursor-pointer">
-                            <img src="${thumb}" class="w-full h-full object-cover" alt="Movie">
-                            <div class="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 hover:opacity-100 transition">
-                                <div class="w-12 h-12 rounded-full bg-yellow-500 text-black flex items-center justify-center text-lg shadow-xl shadow-yellow-500/50">
-                                    <i class="fa-solid fa-play ml-0.5"></i>
-                                </div>
-                            </div>
+                            ${thumbHtml}
                         </div>
                         <div class="p-4 flex-1 flex flex-col justify-between space-y-3">
                             <div onclick="openTheaterPlayer('${movie.id}')" class="cursor-pointer">
@@ -214,7 +276,7 @@
                             
                             <div class="flex items-center justify-between pt-2 border-t border-slate-800 text-xs font-bold">
                                 <div class="flex items-center space-x-3 text-gray-300">
-                                    <button onclick="quickLike('${movie.id}')" class="flex items-center space-x-1 text-pink-400">
+                                    <button onclick="quickLike('${movie.id}')" class="flex items-center space-x-1 text-pink-400 active:scale-95">
                                         <i class="fa-solid fa-heart"></i>
                                         <span>${movie.likes || 0}</span>
                                     </button>
@@ -244,19 +306,17 @@
             document.getElementById('theaterIframe').src = embedUrl;
 
             document.getElementById('theaterPlayerModal').classList.remove('hidden');
-            let elem = document.documentElement;
-            if (elem.requestFullscreen) { elem.requestFullscreen().catch(err => {}); }
         }
 
         function closeTheaterModal() {
             document.getElementById('theaterIframe').src = "";
             document.getElementById('theaterPlayerModal').classList.add('hidden');
-            if (document.exitFullscreen) { document.exitFullscreen().catch(err => {}); }
         }
 
         function toggleFullScreenPlayer() {
+            let elem = document.documentElement;
             if (!document.fullscreenElement) {
-                document.documentElement.requestFullscreen().catch(err => {});
+                elem.requestFullscreen().catch(err => {});
             } else {
                 if (document.exitFullscreen) { document.exitFullscreen().catch(err => {}); }
             }
@@ -293,12 +353,16 @@
             window.toastTimer = setTimeout(() => { toast.classList.add('hidden'); }, 800);
         }
 
+        // Reward and Wallet Integration
         function quickLike(id) {
             let savedMovies = JSON.parse(localStorage.getItem('mgsml_stream_movies') || '[]');
             let movie = savedMovies.find(m => String(m.id) === String(id));
             if(movie) {
                 movie.likes = (movie.likes || 0) + 1;
                 localStorage.setItem('mgsml_stream_movies', JSON.stringify(savedMovies));
+                
+                // Deposit reward to wallet
+                depositRewardCoins(1, 'LIKE_REWARD');
                 autoFetchAndSyncMovies();
             }
         }
@@ -313,17 +377,67 @@
             }
         }
 
-        function openTokenTipModal() {
-            let tokenType = prompt("Choose from your 19 Token types (Gold, Diamond, Star, VIP Coin):");
-            if(tokenType) { alert(`🎉 Successfully tipped tokens to this movie creator!`); }
+        function postComment() {
+            let input = document.getElementById('modalCommentInput');
+            let val = input.value.trim();
+            if(!val || !activeMovieId) return;
+
+            let savedMovies = JSON.parse(localStorage.getItem('mgsml_stream_movies') || '[]');
+            let movie = savedMovies.find(m => String(m.id) === String(activeMovieId));
+            if(movie) {
+                if(!movie.comments) movie.comments = [];
+                movie.comments.push(val);
+                localStorage.setItem('mgsml_stream_movies', JSON.stringify(savedMovies));
+                
+                // Reward for commenting
+                depositRewardCoins(2, 'COMMENT_REWARD');
+                alert("💬 Comment posted successfully! +2 Reward Tokens added to your wallet.");
+                input.value = "";
+            }
         }
 
         function shareMovieLink() {
+            depositRewardCoins(3, 'SHARE_REWARD');
             if(navigator.share) {
                 navigator.share({ title: document.getElementById('playerMovieTitle').innerText, url: window.location.href });
             } else {
-                alert("🔗 Movie link copied!");
+                alert("🔗 Movie link copied to clipboard! +3 Reward Tokens added to your wallet.");
             }
+        }
+
+        function depositRewardCoins(amount, type) {
+            let currentCoins = parseInt(localStorage.getItem('mgsml_user_coins') || '0');
+            currentCoins += amount;
+            localStorage.setItem('mgsml_user_coins', currentCoins);
+
+            let history = JSON.parse(localStorage.getItem('mgsml_wallet_history') || '[]');
+            history.unshift({ type: type, amount: `+${amount} Coins`, date: new Date().toLocaleString() });
+            localStorage.setItem('mgsml_wallet_history', JSON.stringify(history));
+        }
+
+        // 19 Tokens Tip Modal Logic
+        function openTokenTipModal() {
+            document.getElementById('tokenTipModal').classList.remove('hidden');
+        }
+        function closeTokenTipModal() {
+            document.getElementById('tokenTipModal').classList.add('hidden');
+        }
+
+        function executeSendTokenTip() {
+            let tokenType = document.getElementById('selectedTokenCategory').value;
+            let qty = parseInt(document.getElementById('tokenTipAmount').value) || 10;
+
+            // Deposit to Creator Wallet
+            let currentCoins = parseInt(localStorage.getItem('mgsml_user_coins') || '0');
+            currentCoins += qty;
+            localStorage.setItem('mgsml_user_coins', currentCoins);
+
+            let history = JSON.parse(localStorage.getItem('mgsml_wallet_history') || '[]');
+            history.unshift({ type: 'TIP_SENT', amount: `+${qty} [${tokenType}]`, date: new Date().toLocaleString() });
+            localStorage.setItem('mgsml_wallet_history', JSON.stringify(history));
+
+            alert(`🎉 Success! Sent ${qty} [${tokenType}] tokens tip to the creator wallet!`);
+            closeTokenTipModal();
         }
     </script>
 </body>
