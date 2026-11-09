@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Social Club Movies Hub - MGSML Sky Project</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            background: linear-gradient(135deg, #050b14 0%, #0d1b2a 40%, #1b0a2a 100%);
+            color: #ffffff;
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+        .glass-card {
+            background: rgba(12, 28, 55, 0.95);
+            backdrop-filter: blur(15px);
+            border: 1.5px solid rgba(255, 215, 0, 0.3);
+            box-shadow: 0 0 25px rgba(255, 215, 0, 0.15);
+        }
+        ::-webkit-scrollbar { width: 0px; }
+        #playerScreenWrapper {
+            filter: brightness(100%);
+            transition: filter 0.1s ease;
+        }
+    </style>
+</head>
+<body class="pb-24">
+
+    <!-- Top Cinematic Header -->
+    <header class="sticky top-0 z-40 glass-card border-b border-yellow-400/40 px-4 py-3.5 flex items-center justify-between shadow-2xl">
+        <div class="flex items-center space-x-3">
+            <a href="index.html" class="w-10 h-10 rounded-xl bg-gradient-to-tr from-yellow-500 to-amber-600 text-black font-black flex items-center justify-center text-lg active:scale-95 transition-all shadow-lg shadow-yellow-500/30">
+                <i class="fa-solid fa-arrow-left"></i>
+            </a>
+            <div class="flex items-center space-x-2.5">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-yellow-400 via-pink-500 to-cyan-400 flex items-center justify-center text-black font-black text-xl shadow-lg shadow-yellow-500/40">
+                    <i class="fa-solid fa-film"></i>
+                </div>
+                <div class="flex flex-col">
+                    <span class="text-base font-black tracking-wider bg-gradient-to-r from-yellow-400 via-amber-300 to-yellow-500 bg-clip-text text-transparent leading-tight">
+                        SOCIAL CLUB
+                    </span>
+                    <span class="text-[10px] font-extrabold text-yellow-400 tracking-widest">
+                        MOVIES CINEMA HUB
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        <div class="flex items-center space-x-2">
+            <a href="index.html" class="px-3.5 py-1.5 rounded-full bg-yellow-500/20 border border-yellow-500 text-yellow-400 text-xs font-black shadow-lg flex items-center space-x-1.5 active:scale-95 transition">
+                <i class="fa-solid fa-cloud-arrow-up"></i>
+                <span>Studio</span>
+            </a>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="max-w-xl mx-auto px-4 mt-4 space-y-6">
+
+        <!-- TOP HIGHLIGHT REEL (Auto-fetched Trending Movies) -->
+        <section class="space-y-3">
+            <div class="flex items-center justify-between">
+                <h3 class="text-xs font-black text-yellow-400 uppercase tracking-widest flex items-center space-x-1.5">
+                    <i class="fa-solid fa-fire text-pink-500"></i>
+                    <span>Trending Blockbusters & Highlights</span>
+                </h3>
+                <span class="text-[10px] font-bold text-gray-400">Swipe ➔</span>
+            </div>
+
+            <div id="highlightReelContainer" class="flex space-x-3 overflow-x-auto pb-2 scroll-smooth">
+                <div class="min-w-[240px] h-[135px] rounded-2xl bg-slate-900 border border-yellow-500/30 flex flex-col items-center justify-center text-gray-400 text-xs p-4 text-center font-bold">
+                    <i class="fa-solid fa-spinner fa-spin text-2xl text-yellow-400 mb-2"></i>
+                    <span>Auto-fetching movies from cloud storage...</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- ALL MOVIES GRID (Auto-Synced from Upload Engine) -->
+        <section class="space-y-4">
+            <div class="border-b border-yellow-400/20 pb-2">
+                <h2 class="text-sm font-black bg-gradient-to-r from-yellow-400 via-amber-300 to-cyan-400 bg-clip-text text-transparent uppercase tracking-wider">
+                    Full-Length Cinematic Library
+                </h2>
+                <p class="text-[11px] font-bold text-gray-300 mt-0.5">Crystal Clear HD Stream with VidMate Touch Gestures</p>
+            </div>
+
+            <div id="moviesGridContainer" class="space-y-4">
+                <!-- Dynamically synced movies render here -->
+            </div>
+        </section>
+
+    </main>
+
+    <!-- FULLSCREEN THEATER PLAYER MODAL -->
+    <div id="theaterPlayerModal" class="fixed inset-0 bg-black z-[1000] hidden flex flex-col justify-between">
+        <div class="px-4 py-3 flex items-center justify-between bg-black/80 backdrop-blur-md absolute top-0 left-0 right-0 z-50 border-b border-white/10">
+            <h3 id="playerMovieTitle" class="text-xs font-black text-yellow-400 truncate max-w-[240px]">Now Playing</h3>
+            <div class="flex items-center space-x-3">
+                <button onclick="toggleFullScreenPlayer()" class="text-white text-sm bg-slate-800/80 px-2.5 py-1 rounded-lg">
+                    <i class="fa-solid fa-expand"></i>
+                </button>
+                <button onclick="closeTheaterModal()" class="w-8 h-8 rounded-full bg-red-600/80 text-white flex items-center justify-center text-sm font-bold">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+        </div>
+
+        <div id="playerScreenWrapper" class="relative w-full h-full bg-black flex items-center justify-center" ontouchstart="handleTouchStart(event)" ontouchmove="handleTouchMove(event)">
+            <div id="gestureToast" class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-black/80 text-yellow-400 px-4 py-2 rounded-xl text-xs font-black hidden z-50 border border-yellow-500/40 shadow-2xl pointer-events-none">
+                <span id="gestureToastText">Brightness: 100%</span>
+            </div>
+
+            <iframe id="theaterIframe" src="" style="width: 100%; height: 100%; position: absolute; top: 0; left: 0; border: 0;" allowfullscreen="true" allow="autoplay; encrypted-media"></iframe>
+        </div>
+
+        <div class="p-3 bg-black/90 backdrop-blur-md border-t border-white/10 absolute bottom-0 left-0 right-0 z-50 space-y-2">
+            <div class="flex items-center justify-between text-xs">
+                <button onclick="handleLikeActiveMovie()" class="flex items-center space-x-1.5 text-pink-400 font-bold">
+                    <i class="fa-solid fa-heart text-sm"></i>
+                    <span id="modalLikeCount">0 Likes</span>
+                </button>
+                <button onclick="openTokenTipModal()" class="flex items-center space-x-1.5 text-yellow-400 font-bold bg-yellow-500/20 px-3 py-1 rounded-xl border border-yellow-500/40">
+                    <i class="fa-solid fa-coins"></i>
+                    <span>Tip 19 Tokens</span>
+                </button>
+                <button onclick="shareMovieLink()" class="flex items-center space-x-1.5 text-cyan-400 font-bold">
+                    <i class="fa-solid fa-share-nodes text-sm"></i>
+                    <span>Share</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Script Auto-Sync Engine -->
+    <script>
+        const LIBRARY_ID = "799000";
+        let activeMovieId = null;
+        let touchStartY = 0;
+        let currentBrightness = 100;
+        let currentVolume = 100;
+
+        document.addEventListener("DOMContentLoaded", () => {
+            autoFetchAndSyncMovies();
+            // Auto sync every 2 seconds to ensure real-time update
+            setInterval(autoFetchAndSyncMovies, 2000);
+        });
+
+        function autoFetchAndSyncMovies() {
+            let savedMovies = JSON.parse(localStorage.getItem('mgsml_stream_movies') || '[]');
+            
+            // Auto-filter movies category (or include all if category is movie/unspecified)
+            let movieItems = savedMovies.filter(m => m.category === 'movie' || !m.category || m.category === 'medium');
+
+            let highlightContainer = document.getElementById('highlightReelContainer');
+            let gridContainer = document.getElementById('moviesGridContainer');
+
+            if (movieItems.length === 0) {
+                highlightContainer.innerHTML = `<div class="min-w-[240px] h-[135px] rounded-2xl bg-slate-900 border border-yellow-500/30 flex flex-col items-center justify-center text-gray-400 text-xs p-4 text-center font-bold"><i class="fa-solid fa-film text-2xl text-yellow-400 mb-2"></i><span>No Movies Found. Upload from Creator Studio!</span></div>`;
+                gridContainer.innerHTML = `<p class="text-xs text-center text-gray-400 py-6">Library is empty. Upload long movies or videos to watch here.</p>`;
+                return;
+            }
+
+            // Populate Highlight Reel (Sorted by views automatically)
+            let sortedByViews = [...movieItems].sort((a, b) => (b.views || 0) - (a.views || 0));
+            highlightContainer.innerHTML = "";
+            sortedByViews.forEach(movie => {
+                let thumb = movie.thumbnail || 'https://via.placeholder.com/300x169/0d1b2a/00e5ff?text=MGSML+Movie';
+                let card = `
+                    <div onclick="openTheaterPlayer('${movie.id}')" class="min-w-[240px] max-w-[240px] bg-slate-900 rounded-2xl overflow-hidden border border-yellow-500/30 shadow-lg cursor-pointer active:scale-95 transition">
+                        <div class="relative h-[135px] bg-black">
+                            <img src="${thumb}" class="w-full h-full object-cover" alt="Highlight">
+                            <div class="absolute bottom-2 right-2 bg-black/80 px-2 py-0.5 rounded text-[9px] font-black text-yellow-400">
+                                <i class="fa-solid fa-eye"></i> ${movie.views || 100}
+                            </div>
+                        </div>
+                        <div class="p-3">
+                            <h4 class="text-xs font-black text-white truncate">${movie.title}</h4>
+                            <p class="text-[10px] text-gray-400 truncate mt-0.5">Crystal HD Theater View</p>
+                        </div>
+                    </div>
+                `;
+                highlightContainer.innerHTML += card;
+            });
+
+            // Populate Main Grid
+            gridContainer.innerHTML = "";
+            movieItems.forEach(movie => {
+                let thumb = movie.thumbnail || 'https://via.placeholder.com/640x360/0d1b2a/00e5ff?text=MGSML+Movie';
+                let gridCard = `
+                    <div class="glass-card rounded-2xl overflow-hidden border border-yellow-500/30 shadow-xl flex flex-col sm:flex-row">
+                        <div onclick="openTheaterPlayer('${movie.id}')" class="relative sm:w-48 h-48 sm:h-auto bg-black cursor-pointer">
+                            <img src="${thumb}" class="w-full h-full object-cover" alt="Movie">
+                            <div class="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 hover:opacity-100 transition">
+                                <div class="w-12 h-12 rounded-full bg-yellow-500 text-black flex items-center justify-center text-lg shadow-xl shadow-yellow-500/50">
+                                    <i class="fa-solid fa-play ml-0.5"></i>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="p-4 flex-1 flex flex-col justify-between space-y-3">
+                            <div onclick="openTheaterPlayer('${movie.id}')" class="cursor-pointer">
+                                <div class="flex items-center justify-between">
+                                    <span class="text-[10px] font-black text-yellow-400 uppercase tracking-widest bg-yellow-500/10 px-2 py-0.5 rounded border border-yellow-500/30">HD Movie</span>
+                                    <span class="text-[10px] font-bold text-gray-400"><i class="fa-solid fa-eye text-cyan-400"></i> ${movie.views || 150} Views</span>
+                                </div>
+                                <h3 class="text-sm font-black text-white mt-1.5 leading-snug">${movie.title}</h3>
+                                <p class="text-xs text-gray-300 mt-1 line-clamp-2">${movie.description || 'Full HD Crystal Clear Movie Experience.'}</p>
+                            </div>
+                            
+                            <div class="flex items-center justify-between pt-2 border-t border-slate-800 text-xs font-bold">
+                                <div class="flex items-center space-x-3 text-gray-300">
+                                    <button onclick="quickLike('${movie.id}')" class="flex items-center space-x-1 text-pink-400">
+                                        <i class="fa-solid fa-heart"></i>
+                                        <span>${movie.likes || 0}</span>
+                                    </button>
+                                    <span class="text-yellow-400"><i class="fa-solid fa-coins"></i> 19 Tokens</span>
+                                </div>
+                                <button onclick="openTheaterPlayer('${movie.id}')" class="px-3 py-1.5 bg-yellow-500 text-black font-black rounded-xl text-[11px]">
+                                    Watch Full Screen 🎬
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                gridContainer.innerHTML += gridCard;
+            });
+        }
+
+        function openTheaterPlayer(id) {
+            let savedMovies = JSON.parse(localStorage.getItem('mgsml_stream_movies') || '[]');
+            let movie = savedMovies.find(m => String(m.id) === String(id));
+            if(!movie) return;
+
+            activeMovieId = movie.id;
+            document.getElementById('playerMovieTitle').innerText = movie.title;
+            document.getElementById('modalLikeCount').innerText = `${movie.likes || 0} Likes`;
+
+            let embedUrl = `https://iframe.mediadelivery.net/embed/${LIBRARY_ID}/${movie.id}?autoplay=true&loop=false&muted=false`;
+            document.getElementById('theaterIframe').src = embedUrl;
+
+            document.getElementById('theaterPlayerModal').classList.remove('hidden');
+            let elem = document.documentElement;
+            if (elem.requestFullscreen) { elem.requestFullscreen().catch(err => {}); }
+        }
+
+        function closeTheaterModal() {
+            document.getElementById('theaterIframe').src = "";
+            document.getElementById('theaterPlayerModal').classList.add('hidden');
+            if (document.exitFullscreen) { document.exitFullscreen().catch(err => {}); }
+        }
+
+        function toggleFullScreenPlayer() {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen().catch(err => {});
+            } else {
+                if (document.exitFullscreen) { document.exitFullscreen().catch(err => {}); }
+            }
+        }
+
+        function handleTouchStart(e) {
+            if (e.touches.length === 1) { touchStartY = e.touches[0].clientY; }
+        }
+
+        function handleTouchMove(e) {
+            if (e.touches.length !== 1) return;
+            let touchX = e.touches[0].clientX;
+            let touchY = e.touches[0].clientY;
+            let screenWidth = window.innerWidth;
+            let deltaY = touchStartY - touchY;
+
+            let toast = document.getElementById('gestureToast');
+            let toastText = document.getElementById('gestureToastText');
+            toast.classList.remove('hidden');
+
+            if (touchX < screenWidth / 2) {
+                if (deltaY > 5 && currentBrightness < 150) { currentBrightness += 2; }
+                else if (deltaY < -5 && currentBrightness > 30) { currentBrightness -= 2; }
+                document.getElementById('playerScreenWrapper').style.filter = `brightness(${currentBrightness}%)`;
+                toastText.innerText = `☀️ Brightness: ${currentBrightness}%`;
+            } else {
+                if (deltaY > 5 && currentVolume < 100) { currentVolume += 2; }
+                else if (deltaY < -5 && currentVolume > 0) { currentVolume -= 2; }
+                toastText.innerText = `🔊 Volume: ${currentVolume}%`;
+            }
+
+            touchStartY = touchY;
+            clearTimeout(window.toastTimer);
+            window.toastTimer = setTimeout(() => { toast.classList.add('hidden'); }, 800);
+        }
+
+        function quickLike(id) {
+            let savedMovies = JSON.parse(localStorage.getItem('mgsml_stream_movies') || '[]');
+            let movie = savedMovies.find(m => String(m.id) === String(id));
+            if(movie) {
+                movie.likes = (movie.likes || 0) + 1;
+                localStorage.setItem('mgsml_stream_movies', JSON.stringify(savedMovies));
+                autoFetchAndSyncMovies();
+            }
+        }
+
+        function handleLikeActiveMovie() {
+            if(!activeMovieId) return;
+            quickLike(activeMovieId);
+            let savedMovies = JSON.parse(localStorage.getItem('mgsml_stream_movies') || '[]');
+            let movie = savedMovies.find(m => String(m.id) === String(activeMovieId));
+            if(movie) {
+                document.getElementById('modalLikeCount').innerText = `${movie.likes} Likes`;
+            }
+        }
+
+        function openTokenTipModal() {
+            let tokenType = prompt("Choose from your 19 Token types (Gold, Diamond, Star, VIP Coin):");
+            if(tokenType) { alert(`🎉 Successfully tipped tokens to this movie creator!`); }
+        }
+
+        function shareMovieLink() {
+            if(navigator.share) {
+                navigator.share({ title: document.getElementById('playerMovieTitle').innerText, url: window.location.href });
+            } else {
+                alert("🔗 Movie link copied!");
+            }
+        }
+    </script>
+</body>
+</html>
