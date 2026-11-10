@@ -23,10 +23,6 @@
             box-shadow: 0 0 25px rgba(255, 215, 0, 0.15);
         }
         ::-webkit-scrollbar { width: 0px; }
-        #playerScreenWrapper {
-            filter: brightness(100%);
-            transition: filter 0.1s ease;
-        }
     </style>
 </head>
 <body class="pb-24">
@@ -53,7 +49,7 @@
         </div>
 
         <div class="flex items-center space-x-2">
-            <a href="index.html" class="px-3.5 py-1.5 rounded-full bg-yellow-500/20 border border-yellow-500 text-yellow-400 text-xs font-black shadow-lg flex items-center space-x-1.5 active:scale-95 transition">
+            <a href="upload.html" class="px-3.5 py-1.5 rounded-full bg-yellow-500/20 border border-yellow-500 text-yellow-400 text-xs font-black shadow-lg flex items-center space-x-1.5 active:scale-95 transition">
                 <i class="fa-solid fa-cloud-arrow-up"></i>
                 <span>Studio</span>
             </a>
@@ -99,7 +95,6 @@
 
     <!-- FULLSCREEN THEATER PLAYER MODAL -->
     <div id="theaterPlayerModal" class="fixed inset-0 bg-black z-[1000] hidden flex flex-col justify-between">
-        <!-- Top Bar hidden during play or minimal back -->
         <div class="px-4 py-3 flex items-center justify-between bg-black/90 backdrop-blur-md absolute top-0 left-0 right-0 z-50 border-b border-white/10">
             <h3 id="playerMovieTitle" class="text-xs font-black text-yellow-400 truncate max-w-[240px]">Now Playing</h3>
             <div class="flex items-center space-x-3">
@@ -112,16 +107,11 @@
             </div>
         </div>
 
-        <!-- Video Stream Frame with Touch Gestures -->
-        <div id="playerScreenWrapper" class="relative w-full h-full bg-black flex items-center justify-center" ontouchstart="handleTouchStart(event)" ontouchmove="handleTouchMove(event)">
-            <div id="gestureToast" class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-black/80 text-yellow-400 px-4 py-2 rounded-xl text-xs font-black hidden z-50 border border-yellow-500/40 shadow-2xl pointer-events-none">
-                <span id="gestureToastText">Brightness: 100%</span>
-            </div>
-
+        <!-- Clean Player Wrapper using Bunny.net native player features -->
+        <div id="playerScreenWrapper" class="relative w-full h-full bg-black flex items-center justify-center">
             <iframe id="theaterIframe" src="" style="width: 100%; height: 100%; position: absolute; top: 0; left: 0; border: 0;" allowfullscreen="true" allow="autoplay; encrypted-media"></iframe>
         </div>
 
-        <!-- Bottom Interactive Bar (Likes, Comments, Tips, Share) -->
         <div class="p-3 bg-black/95 backdrop-blur-md border-t border-white/10 absolute bottom-0 left-0 right-0 z-50 space-y-3">
             <div class="flex items-center justify-around text-xs">
                 <button onclick="handleLikeActiveMovie()" class="flex items-center space-x-1 text-pink-400 font-bold active:scale-95 transition">
@@ -138,7 +128,6 @@
                 </button>
             </div>
 
-            <!-- Comment Input Box -->
             <div class="flex space-x-2 pt-1 border-t border-slate-800">
                 <input type="text" id="modalCommentInput" placeholder="Write a comment & earn tokens..." class="flex-1 bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white font-bold">
                 <button onclick="postComment()" class="px-4 py-2 bg-yellow-500 text-black font-black rounded-xl text-xs">Post</button>
@@ -147,7 +136,7 @@
     </div>
 
     <!-- 19 TOKENS TIP MODAL -->
-    <div id="tokenTipModal" class="fixed inset-0 bg-black/9orgen backdrop-blur-md z-[1100] hidden flex items-center justify-center p-4">
+    <div id="tokenTipModal" class="fixed inset-0 bg-black/90 backdrop-blur-md z-[1100] hidden flex items-center justify-center p-4">
         <div class="glass-card w-full max-w-md rounded-3xl p-5 border border-yellow-500/50 space-y-4 max-h-[90vh] overflow-y-auto">
             <div class="flex items-center justify-between border-b border-slate-800 pb-3">
                 <h3 class="text-xs font-black text-yellow-400 flex items-center space-x-2">
@@ -197,13 +186,10 @@
         </div>
     </div>
 
-    <!-- Script Auto-Sync & Reward Engine -->
+    <!-- Script Auto-Sync & Robust Engine -->
     <script>
         const LIBRARY_ID = "799000";
         let activeMovieId = null;
-        let touchStartY = 0;
-        let currentBrightness = 100;
-        let currentVolume = 100;
 
         document.addEventListener("DOMContentLoaded", () => {
             autoFetchAndSyncMovies();
@@ -212,7 +198,16 @@
 
         function autoFetchAndSyncMovies() {
             let savedMovies = JSON.parse(localStorage.getItem('mgsml_stream_movies') || '[]');
-            let movieItems = savedMovies.filter(m => m.category === 'movie' || !m.category || m.category === 'medium');
+            let movieItems = savedMovies.filter(m => {
+                let cat = (m.category || '').toLowerCase();
+                let dur = parseInt(m.duration || 0);
+                if(cat === 'short' || (dur > 0 && dur <= 180)) return false;
+                return true;
+            });
+
+            if(movieItems.length === 0) {
+                movieItems = savedMovies;
+            }
 
             let highlightContainer = document.getElementById('highlightReelContainer');
             let gridContainer = document.getElementById('moviesGridContainer');
@@ -227,8 +222,8 @@
             highlightContainer.innerHTML = "";
             sortedByViews.forEach(movie => {
                 let thumb = movie.thumbnail || '';
-                let thumbHtml = thumb ? `<img src="${thumb}" class="w-full h-full object-cover" alt="Highlight">` : `
-                    <div class="w-full h-full bg-gradient-to-br from-slate-900 to-indigo-950 flex flex-col items-center justify-center p-2 text-center">
+                let thumbHtml = thumb ? `<img src="${thumb}" class="w-full h-full object-cover pointer-events-none" alt="Highlight">` : `
+                    <div class="w-full h-full bg-gradient-to-br from-slate-900 to-indigo-950 flex flex-col items-center justify-center p-2 text-center pointer-events-none">
                         <div class="w-10 h-10 rounded-full bg-yellow-500 text-black flex items-center justify-center text-base shadow-lg mb-1"><i class="fa-solid fa-play ml-0.5"></i></div>
                         <span class="text-[10px] font-black text-yellow-400 truncate max-w-full">${movie.title}</span>
                     </div>`;
@@ -241,7 +236,7 @@
                                 <i class="fa-solid fa-eye"></i> ${movie.views || 100}
                             </div>
                         </div>
-                        <div class="p-3">
+                        <div class="p-3 pointer-events-none">
                             <h4 class="text-xs font-black text-white truncate">${movie.title}</h4>
                             <p class="text-[10px] text-gray-400 truncate mt-0.5">Crystal HD Theater View</p>
                         </div>
@@ -252,6 +247,7 @@
 
             gridContainer.innerHTML = "";
             movieItems.forEach(movie => {
+                let author = movie.authorName || "Social Club Creator";
                 let thumb = movie.thumbnail || '';
                 let thumbHtml = thumb ? `<img src="${thumb}" class="w-full h-full object-cover" alt="Movie">` : `
                     <div class="w-full h-full bg-gradient-to-br from-slate-900 to-indigo-950 flex flex-col items-center justify-center p-4 text-center">
@@ -267,7 +263,7 @@
                         <div class="p-4 flex-1 flex flex-col justify-between space-y-3">
                             <div onclick="openTheaterPlayer('${movie.id}')" class="cursor-pointer">
                                 <div class="flex items-center justify-between">
-                                    <span class="text-[10px] font-black text-yellow-400 uppercase tracking-widest bg-yellow-500/10 px-2 py-0.5 rounded border border-yellow-500/30">HD Movie</span>
+                                    <span class="text-[10px] font-black text-yellow-400 uppercase tracking-widest bg-yellow-500/10 px-2 py-0.5 rounded border border-yellow-500/30">@${author}</span>
                                     <span class="text-[10px] font-bold text-gray-400"><i class="fa-solid fa-eye text-cyan-400"></i> ${movie.views || 150} Views</span>
                                 </div>
                                 <h3 class="text-sm font-black text-white mt-1.5 leading-snug">${movie.title}</h3>
@@ -322,46 +318,12 @@
             }
         }
 
-        function handleTouchStart(e) {
-            if (e.touches.length === 1) { touchStartY = e.touches[0].clientY; }
-        }
-
-        function handleTouchMove(e) {
-            if (e.touches.length !== 1) return;
-            let touchX = e.touches[0].clientX;
-            let touchY = e.touches[0].clientY;
-            let screenWidth = window.innerWidth;
-            let deltaY = touchStartY - touchY;
-
-            let toast = document.getElementById('gestureToast');
-            let toastText = document.getElementById('gestureToastText');
-            toast.classList.remove('hidden');
-
-            if (touchX < screenWidth / 2) {
-                if (deltaY > 5 && currentBrightness < 150) { currentBrightness += 2; }
-                else if (deltaY < -5 && currentBrightness > 30) { currentBrightness -= 2; }
-                document.getElementById('playerScreenWrapper').style.filter = `brightness(${currentBrightness}%)`;
-                toastText.innerText = `☀️ Brightness: ${currentBrightness}%`;
-            } else {
-                if (deltaY > 5 && currentVolume < 100) { currentVolume += 2; }
-                else if (deltaY < -5 && currentVolume > 0) { currentVolume -= 2; }
-                toastText.innerText = `🔊 Volume: ${currentVolume}%`;
-            }
-
-            touchStartY = touchY;
-            clearTimeout(window.toastTimer);
-            window.toastTimer = setTimeout(() => { toast.classList.add('hidden'); }, 800);
-        }
-
-        // Reward and Wallet Integration
         function quickLike(id) {
             let savedMovies = JSON.parse(localStorage.getItem('mgsml_stream_movies') || '[]');
             let movie = savedMovies.find(m => String(m.id) === String(id));
             if(movie) {
                 movie.likes = (movie.likes || 0) + 1;
                 localStorage.setItem('mgsml_stream_movies', JSON.stringify(savedMovies));
-                
-                // Deposit reward to wallet
                 depositRewardCoins(1, 'LIKE_REWARD');
                 autoFetchAndSyncMovies();
             }
@@ -388,8 +350,6 @@
                 if(!movie.comments) movie.comments = [];
                 movie.comments.push(val);
                 localStorage.setItem('mgsml_stream_movies', JSON.stringify(savedMovies));
-                
-                // Reward for commenting
                 depositRewardCoins(2, 'COMMENT_REWARD');
                 alert("💬 Comment posted successfully! +2 Reward Tokens added to your wallet.");
                 input.value = "";
@@ -415,7 +375,6 @@
             localStorage.setItem('mgsml_wallet_history', JSON.stringify(history));
         }
 
-        // 19 Tokens Tip Modal Logic
         function openTokenTipModal() {
             document.getElementById('tokenTipModal').classList.remove('hidden');
         }
@@ -427,7 +386,6 @@
             let tokenType = document.getElementById('selectedTokenCategory').value;
             let qty = parseInt(document.getElementById('tokenTipAmount').value) || 10;
 
-            // Deposit to Creator Wallet
             let currentCoins = parseInt(localStorage.getItem('mgsml_user_coins') || '0');
             currentCoins += qty;
             localStorage.setItem('mgsml_user_coins', currentCoins);
